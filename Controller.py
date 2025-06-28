@@ -15,15 +15,21 @@ Up = False
 
 
 def UI():
+        global running
         pygame.init()
-        screen = pygame.display.set_mode(500,500)
+        screen = pygame.display.set_mode((500, 500))
         pygame.display.set_caption("Drone Controller")
         
         while running:
                 for event in pygame.event.get():
-                        if event == pygame.QUIT():
+                        print(event)
+                        
+                        if event.type == pygame.QUIT:
+
+                                running = False
                                 pygame.quit()
                                 sys.exit()
+
 
 
 
