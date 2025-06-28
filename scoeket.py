@@ -4,6 +4,15 @@ import sys
 import pygame
 import threading
 
+
+def UI():
+        pygame.init()
+
+
+
+
+
+
 socket = Socket.socket(Socket.AF_INET, Socket.SOCK_STREAM)
 print("socketmake")
 Host = "0.0.0.0"
