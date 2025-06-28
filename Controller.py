@@ -15,20 +15,28 @@ Up = False
 
 
 def UI():
+        x,y = (500,500)
+        #Window Size
         global running
+        #sets the running variable global so u can change
         pygame.init()
-        screen = pygame.display.set_mode((500, 500))
+        screen = pygame.display.set_mode((x,y))
         pygame.display.set_caption("Drone Controller")
-        
+        #Starts and creates the window
         while running:
+                screen.fill((255,255,255))
                 for event in pygame.event.get():
-                        print(event)
-                        
                         if event.type == pygame.QUIT:
-
                                 running = False
                                 pygame.quit()
                                 sys.exit()
+                                #Closes the window
+
+                pygame.draw.circle(screen, (0,0,0), (x/2, y/2), 15)
+
+                pygame.display.flip()
+                #Updates the window
+                
 
 
 
@@ -40,16 +48,19 @@ UI()
 
 
 socket = Socket.socket(Socket.AF_INET, Socket.SOCK_STREAM)
+#Creates the socket
 print("socketmake")
 Host = "0.0.0.0"
 Port = 55555
 num = 0
 
 socket.bind((Host, Port))
+#Attaches a socket to a location
 print("socket bind")
 socket.listen(5)
 print("waiting")
 conn, adress = socket.accept()
+#Connects to the conncetion
 
 print("connected by: " + adress[0])
 
