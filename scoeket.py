@@ -4,9 +4,29 @@ import sys
 import pygame
 import threading
 
+running = True
+
+fwd = False
+right = False
+left = False
+Down = False
+Lower = False
+Up = False
+
 
 def UI():
         pygame.init()
+        screen = pygame.display.set_mode(500,500)
+        pygame.display.set_caption("Drone Controller")
+        
+        while running:
+                for event in pygame.event.get():
+                        if event == pygame.QUIT():
+                                pygame.quit()
+                                sys.exit()
+
+
+
 
 
 
