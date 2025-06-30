@@ -3,6 +3,7 @@ import time
 import sys
 import pygame
 import threading
+import numpy
 
 #Communication variables
 respond = "deez"
