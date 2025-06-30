@@ -4,8 +4,14 @@ import sys
 import pygame
 import threading
 
+#Communication variables
+respond = "deez"
+
+#Pygame Variables
 running = True
 
+
+#Mixed
 fwd = False
 right = False
 left = False
@@ -15,14 +21,21 @@ Up = False
 
 
 def UI():
+        pygame.init()
+        #Variables and Stuff
+        clock = pygame.time.Clock()
         x,y = (500,500)
-        #Window Size
+        Font = pygame.font.Font("Font.ttf", 23)
+        textSurface = Font.render(str(respond), True, "Black")
+
+
         global running
         #sets the running variable global so u can change
-        pygame.init()
+        
         screen = pygame.display.set_mode((x,y))
         pygame.display.set_caption("Drone Controller")
         #Starts and creates the window
+
         while running:
                 screen.fill((255,255,255))
                 for event in pygame.event.get():
@@ -30,21 +43,19 @@ def UI():
                                 running = False
                                 pygame.quit()
                                 sys.exit()
-                                #Closes the window
+                        #Closes the window
 
                 pygame.draw.circle(screen, (0,0,0), (x/2, y/2), 15)
+                screen.blit(textSurface, (0,0))
+
 
                 pygame.display.flip()
+                clock.tick(100)
                 #Updates the window
                 
 
 
-
-
-
 UI()
-
-
 
 
 socket = Socket.socket(Socket.AF_INET, Socket.SOCK_STREAM)
