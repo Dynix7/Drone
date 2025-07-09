@@ -13,15 +13,41 @@ running = True
 
 
 #movement thingys
+#A is the acceleraion thingy
 fwd = False
+fwdA= 0
+
 right = False
+rightA = 0
+
 left = False
+leftA = 0
+
 down = False
+downA = 0
+
 lower = False
 up = False
 
 
+def Accel(Check, accelVar):
+        if Check == True and accelVar < 1:
+
+                accelVar += 0.025
+        elif Check == False and accelVar > 0:
+
+                accelVar -=0.025
+        accelVar = round(accelVar, 4)
+        return accelVar
+
+
+
+
+
 def UI():
+        global running, fwd, right, left, down, lower, up, fwdA, rightA, leftA, downA
+        #set variables global so u can change
+
         pygame.init()
         #Variables and Stuff
         clock = pygame.time.Clock()
@@ -35,18 +61,25 @@ def UI():
         Grid = pygame.image.load("Grid.png").convert()
         GridRect = Grid.get_rect(center = (x/2, y/2))
 
-        #Load Text
-        Font = pygame.font.Font("Font.ttf", 23)
-        textSurface = Font.render(str(respond), True, "White")
 
-        global running, fwd, right, left, down, lower, up
-        #set variables global so u can change
+        #Load Font
+        Font = pygame.font.Font("Font.ttf", 23)
+        
+
+
 
         while running:
+                textSurface = Font.render("fwd: " +str(fwdA) + " right: " + str(rightA) + " down: " + str(downA) + " left: " + str(leftA), True, "White")
+                #Adjusts the acceleration
+
+                fwdA = Accel(fwd, fwdA)
+                downA = Accel(down, downA)
+                rightA = Accel(right, rightA)
+                leftA = Accel(left, leftA)
 
                 #Moves the background by doing opposite of movement key
                 if fwd == True:
-                        GridRect.centery += 3.7
+                        GridRect.centery += 3.7  
                 if down == True:
                         GridRect.centery -= 3.7
                 if right == True:
@@ -55,13 +88,15 @@ def UI():
                         GridRect.centerx += 3.7
 
                 
+
+
                 #Infinitely repeats grid by teleporting it back to where it came from
                 #Teleport up(fwd)
                 if GridRect.top > 0:
                         GridRect.centery -=y
 
                 #Teleport Down(down)
-                if GridRect.bottom < 513:
+                if GridRect.bottom < 505:
                         GridRect.centery +=y
 
                 #Teleport Right(Right)
@@ -89,6 +124,7 @@ def UI():
                                 if event.key == pygame.K_w:
                                         fwd = True
 
+
                                 #Down movement        
                                 if event.key == pygame.K_s:
                                         down = True
@@ -101,6 +137,11 @@ def UI():
                                 if event.key == pygame.K_a:
                                         left = True
 
+                                if event.key == pygame.K_SPACE:
+                                        up = True
+                                
+                                if event.key == pygame.K_LCTRL:
+                                        lower = True
 
                         elif event.type == pygame.KEYUP:
                                 #Detects fwd release
@@ -115,7 +156,13 @@ def UI():
                                         right = False
 
                                 if event.key == pygame.K_a:
-                                        left = False   
+                                        left = False  
+
+                                if event.key == pygame.K_SPACE:
+                                        up = False  
+
+                                if event.key == pygame.K_LCTRL:
+                                        lower = False
 
                 #Draws Circle and text
                 pygame.draw.circle(screen, (255,255,255), (x/2, y/2), 15)
@@ -134,7 +181,7 @@ socket = Socket.socket(Socket.AF_INET, Socket.SOCK_STREAM)
 print("socketmake")
 Host = "0.0.0.0"
 Port = 55555
-num = 0
+
 
 socket.bind((Host, Port))
 #Attaches a socket to a location
@@ -147,13 +194,13 @@ conn, adress = socket.accept()
 print("connected by: " + adress[0])
 
 while True:
-        give = "amongus"+ str(num)
-        final = give.encode()
-        conn.send(final)
+        give = "amongus"
+        
+        conn.send(give.encode())
 
         respond = conn.recv(1024)
         print(respond)
-        num +=1
+
         time.sleep(0.1)
         
         
