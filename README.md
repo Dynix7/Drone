@@ -1,5 +1,5 @@
-It drone thingy code
-Two part
-computer
+drone thingy code
+There are two parts
+the computer
 and
-pico stuff
+Raspberry Pi Pico(W)
