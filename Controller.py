@@ -3,7 +3,7 @@ import time
 import sys
 import pygame
 import threading
-import numpy
+import json
 
 #Communication variables 
 respond = "Data stuff"
@@ -29,6 +29,9 @@ downA = 0
 lower = False
 up = False
 
+Movement = {"fwd": fwd, "fwdA": fwdA, "right": right, "rightA": rightA, "left": left, "leftA": leftA, "down": down, "downA": downA, "lower": lower, "up": up}
+
+
 
 def Accel(Check, accelVar):
         if Check == True and accelVar < 1:
@@ -45,8 +48,9 @@ def Accel(Check, accelVar):
 
 
 def UI():
-        global running, fwd, right, left, down, lower, up, fwdA, rightA, leftA, downA
+        global running, fwd, right, left, down, lower, up, fwdA, rightA, leftA, downA, Movement
         #set variables global so u can change
+
 
         pygame.init()
         #Variables and Stuff
@@ -69,6 +73,11 @@ def UI():
 
 
         while running:
+
+                Movement = {"fwd": fwd, "fwdA": fwdA, "right": right, "rightA": rightA, "left": left, "leftA": leftA, "down": down, "downA": downA, "lower": lower, "up": up}
+
+
+
                 textSurface = Font.render("fwd: " +str(fwdA) + " right: " + str(rightA) + " down: " + str(downA) + " left: " + str(leftA), True, "White")
                 #Adjusts the acceleration
 
@@ -171,38 +180,43 @@ def UI():
                 #Updates the window
                 pygame.display.flip()
                 clock.tick(100)
+
                    
 
-UI()
 
 
-socket = Socket.socket(Socket.AF_INET, Socket.SOCK_STREAM)
-#Creates the socket
-print("socketmake")
-Host = "0.0.0.0"
-Port = 55555
+def Communication():
+        socket = Socket.socket(Socket.AF_INET, Socket.SOCK_STREAM)
+        #Creates the socket
+        print("socketmake")
+        Host = "0.0.0.0"
+        Port = 55555
 
 
-socket.bind((Host, Port))
-#Attaches a socket to a location
-print("socket bind")
-socket.listen(5)
-print("waiting")
-conn, adress = socket.accept()
-#Connects to the conncetion
+        socket.bind((Host, Port))
+        #Attaches a socket to a location
+        print("socket bind")
+        socket.listen(5)
+        print("waiting")
+        conn, adress = socket.accept()
+        #Connects to the conncetion
 
-print("connected by: " + adress[0])
+        print("connected by: " + adress[0])
 
-while True:
-        give = "amongus"
+        while running:
+                #Data to be sent
+                give = json.dumps(Movement)
+                
+                conn.send(give.encode())
+
+                responce = conn.recv(1024)
+                print(responce)
+
+                time.sleep(0.1)
+        sys.exit()
         
-        conn.send(give.encode())
+UIthread = threading.Thread(target=UI)
+communicationThread = threading.Thread(target=Communication)
 
-        respond = conn.recv(1024)
-        print(respond)
-
-        time.sleep(0.1)
-        
-        
-
-
+UIthread.start()
+communicationThread.start()
