@@ -12,8 +12,8 @@ wifiPassword = ""
 led = Pin("LED", Pin.OUT)
 Movement = {}
 
-Host = ""
-#Enter the laptop IP
+Host = "192.168.29.246"
+#Enter the local laptop IP
 Port = 55555
 
 
