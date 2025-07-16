@@ -4,16 +4,19 @@ from machine import Pin
 import time
 import sys
 import _thread
-
+import ujson
 
 wifiName = ""
 wifiPassword = ""
 # wait chat literally bot behavivor i need to actually download them
 led = Pin("LED", Pin.OUT)
-num = 0
+Movement = {}
+
 Host = ""
 #Enter the laptop IP
 Port = 55555
+
+
 
 def connect(ssid, password):
     wlan = network.WLAN(network.STA_IF)
@@ -29,9 +32,6 @@ def connect(ssid, password):
     # https://docs.micropython.org/en/latest/library/network.WLAN.html
     
 connect(wifiName, wifiPassword)
-
-
-
 
 try:
     socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -52,19 +52,23 @@ except Exception as e:
     #If theres an error
 
 
-
 while True:
    
     try:
         recieve = socket.recv(1024)
         if recieve:
-            #We get a response
-            print(recieve)
+            
+            recieve = recieve.decode()
+            Movement = ujson.loads(recieve)
+            
+            print(Movement)
+            
             led.toggle()
-            respond = "fr"+str(num)
+            
+            respond = "fr"
             final = respond.encode()
             socket.send(final)
-            num +=1
+            
             time.sleep(0.1)
             
         else:
