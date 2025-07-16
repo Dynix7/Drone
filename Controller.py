@@ -36,10 +36,10 @@ Movement = {"fwd": fwd, "fwdA": fwdA, "right": right, "rightA": rightA, "left": 
 def Accel(Check, accelVar):
         if Check == True and accelVar < 1:
 
-                accelVar += 0.025
+                accelVar += 0.05
         elif Check == False and accelVar > 0:
 
-                accelVar -=0.025
+                accelVar -=0.05
         accelVar = round(accelVar, 4)
         return accelVar
 
