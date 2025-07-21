@@ -31,7 +31,7 @@ def connect(ssid, password):
     print(wlan.ifconfig())
     # https://docs.micropython.org/en/latest/library/network.WLAN.html
     
-connect(wifiName, wifiPassword)
+
 
 try:
     socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -41,7 +41,7 @@ except Exception as e:
     print("ur cooked lil bro no socket", e)
     sys.exit()
 
-time.sleep(5)
+time.sleep(3)
 
 try:
     socket.connect((Host, Port))
@@ -51,33 +51,35 @@ except Exception as e:
     print("no connected :(", e)
     #If theres an error
 
+connect(wifiName, wifiPassword)
 
-while True:
-   
-    try:
-        recieve = socket.recv(1024)
-        if recieve:
-            
-            recieve = recieve.decode()
-            Movement = ujson.loads(recieve)
-            
-            print(Movement)
-            
-            led.toggle()
-            
-            respond = "fr"
-            final = respond.encode()
-            socket.send(final)
-            
-            time.sleep(0.1)
-            
-        else:
-            print("nothing back, conn closed")
+def coms()
+    while True:
+       
+        try:
+            recieve = socket.recv(1024)
+            if recieve:
+                
+                recieve = recieve.decode()
+                Movement = ujson.loads(recieve)
+                
+                print(Movement)
+                
+                led.toggle()
+                
+                respond = "fr"
+                final = respond.encode()
+                socket.send(final)
+                
+                time.sleep(0.1)
+                
+            else:
+                print("nothing back, conn closed")
+                break
+                
+        except Exception as e:
+            print(e)
             break
             
-    except Exception as e:
-        print(e)
-        break
-            
-    
+coms()
    
