@@ -18,6 +18,16 @@ Port = 55555
 
 lock = _thread.allocate_lock()
 
+#Starting at top left facing forwards going clockwise
+# 0 - 2047
+
+
+m1Pin = 16
+m2Pin = 17 
+m3Pin = 18
+m4Pin = 19
+
+
 def connect(ssid, password):
     wlan = network.WLAN(network.STA_IF)
     wlan.active(True)
@@ -133,18 +143,21 @@ def coms()
         try:
             recieve = socket.recv(1024)
             if recieve:
+                
                 lock.acquire()
+                
                 recieve = recieve.decode()
                 Movement = ujson.loads(recieve)
                 
                 print(Movement)
                 
                 led.toggle()
-                
                 respond = "fr"
                 final = respond.encode()
                 socket.send(final)
+                
                 lock.release()
+                
                 time.sleep(0.1)
                 
             else:
@@ -154,6 +167,49 @@ def coms()
         except Exception as e:
             print(e)
             break
+
+
+def motorControl():
+    
+    m1T = 0
+    m2T = 0
+    m3T = 0
+    m4T = 0
+    
+    time.sleep(5)
+    
+    while True:
+        if Movement[running] == True:
+            if m1T == 0:
+                m1T = m2T = m3T = m4T = 100
+                
+            if Movement[up] == True:
+                m1T+=40
+                m2T+=40
+                m3T+=40
+                m4T+=40
+                
+            if Movement[lower] == True:
+                m1T-=40
+                m2T-=40
+                m3T-=40
+                m4T-=40
+        
+        #Safety Checks so it doesn't go too high or between 1 to 47
+        if m1T > 1950 or m2T > 1950:
+            m1T, m2T, m3T, m4T = 1950
             
-coms()
+        if m1T < 48 or m2T < 48:
+            m1T, m2T, m3T, m4T = 48
+        
+        
+        send_dshot_to_escs([m1T, m2T, m3T, m4T], pins=[m1Pin, m2Pin, m3Pin, m4Pin]
+                           
+        time.sleep(.012)
+        
+        else:
+            send_dshot_to_escs([0, 0, 0, 0], pins=[m1Pin, m2Pin, m3Pin, m4Pin]
+            break
+
+_thread.start_new_thread(coms, ())
    

@@ -74,7 +74,7 @@ def UI():
 
         while running:
                 
-                Movement = {"fwd": fwd, "fwdA": fwdA, "right": right, "rightA": rightA, "left": left, "leftA": leftA, "down": down, "downA": downA, "lower": lower, "up": up}
+                Movement = {"fwd": fwd, "fwdA": fwdA, "right": right, "rightA": rightA, "left": left, "leftA": leftA, "down": down, "downA": downA, "lower": lower, "up": up, "running": running}
 
 
 
