@@ -18,14 +18,14 @@ Port = 55555
 
 lock = _thread.allocate_lock()
 
-#Starting at top left facing forwards going clockwise
+#Starting at top right and going counterclockwise
 # 0 - 2047
 
 
-m1Pin = 16
-m2Pin = 17 
-m3Pin = 18
-m4Pin = 19
+m1Pin = 16 #Clockwise
+m2Pin = 17 #Counter Clockwise
+m3Pin = 18 #CW
+m4Pin = 19 #CCW
 
 
 def connect(ssid, password):
