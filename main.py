@@ -16,7 +16,7 @@ Host = ""
 #Enter the local laptop IP
 Port = 55555
 
-
+lock = _thread.allocate_lock()
 
 def connect(ssid, password):
     wlan = network.WLAN(network.STA_IF)
@@ -133,7 +133,7 @@ def coms()
         try:
             recieve = socket.recv(1024)
             if recieve:
-                
+                lock.acquire()
                 recieve = recieve.decode()
                 Movement = ujson.loads(recieve)
                 
@@ -144,7 +144,7 @@ def coms()
                 respond = "fr"
                 final = respond.encode()
                 socket.send(final)
-                
+                lock.release()
                 time.sleep(0.1)
                 
             else:
