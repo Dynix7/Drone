@@ -5,7 +5,7 @@ import time
 import sys
 import _thread
 import ujson
-import rp2
+from rp2 import PIO, StateMachine, asm_pio
 wifiName = ""
 wifiPassword = ""
 # wait chat literally bot behavivor i need to actually download them
@@ -16,6 +16,7 @@ Host = ""
 #Enter the local laptop IP
 Port = 55555
 
+#Prevents threads from like writing over eachother
 lock = _thread.allocate_lock()
 
 #Starting at top right and going counterclockwise
@@ -63,81 +64,69 @@ except Exception as e:
 
 connect(wifiName, wifiPassword)
 
+
+
+
+
+
 #DISCLAIMER
 #DISCLAIMER
 #DISCLAIMER
-#NGL I HAVE NO CLUE HOW THE DSHOT COMMUNICATION PROTOCOL WORKS I JUST STOLE THIS
-#I would just use a libary but uhh idk cant find
+#NGL I HAVE NO CLUE HOW THE DSHOT COMMUNICATION PROTOCOL WORKS so im just using this and I hope it works 
+#I would just use a module but uhh idk cant find
+
+DSHOT_SPEED = 150  # kbps
+
+@asm_pio(
+    sideset_init=PIO.OUT_LOW,
+    out_shiftdir=PIO.SHIFT_LEFT,  # MSB first
+    autopull=True,
+    pull_thresh=16,
+)
+def dshot():
+    # Send each bit (MSB first)
+    # For DSHOT: 0 = short high, long low; 1 = long high, short low
+    # 1: high 2/3 of bit time, 0: high 1/3 of bit time
+    set(x, 15)                 # 16 bits
+    label("bitloop")
+    out(y, 1)                  # Pull next bit to y
+    mov(pins, y)   [2]         # Set pin (high/low) for high time (2 cycles)
+    nop()         [1]          # Stay high for 1 more cycle
+    set(pins, 0)  [2]          # Set pin low for low time (2 cycles)
+    jmp(x_dec, "bitloop")      # Next bit
+
+# Helper to create DSHOT packet
+def create_packet(throttle, telemetry=0):
+    packet = (throttle << 1) | (telemetry & 0x1)
+    csum = 0
+    csum_data = packet
+    for _ in range(3):  # Only XOR 3 nibbles (12 bits)
+        csum ^= csum_data & 0xF
+        csum_data >>= 4
+    csum &= 0xF
+    return (packet << 4) | csum
 
 def send_dshot_to_escs(throttles, pins=None, dshot_speed=150):
-    """
-    Send DSHOT signals to 4 ESCs.
-
-    Parameters:
-        throttles: list of 4 throttle values (0-2047)
-        pins: list of 4 GPIO pin numbers, default is [16, 17, 18, 19]
-        dshot_speed: DSHOT speed in kbps, default 150
-    """
     if pins is None:
-        pins = [16, 17, 18, 19]  # default GPIO pins
-
-    # Function to create a simple 16-bit DSHOT packet with checksum
-    def create_packet(throttle, telemetry=0):
-        packet = (throttle << 1) | (telemetry & 0x1)
-        # Simple checksum: XOR of 4 4-bit nibbles
-        csum = 0
-        csum_data = packet
-        for _ in range(4):
-            csum ^= (csum_data & 0xF)
-            csum_data >>= 4
-        csum &= 0xF
-        return (packet << 4) | csum  # 16-bit packet
-    
-    # Generate packets for each throttle
+        pins = [16, 17, 18, 19]
     packets = [create_packet(t) for t in throttles]
-    
-    # Calculate frequency based on DSHOT speed (approximate)
-    freq = dshot_speed * 1000 * 16  # cycles per second
+    freq = dshot_speed * 1000 * 3  # 3 cycles per bit
 
-    # Define the PIO program to send 16 bits
-    @rp2.asm_pio(sideset_init=rp2.PIO.OUT_LOW, out_shiftdir=rp2.SHIFT_RIGHT, autopull=True, pull_thresh=16)
-    def dshot():
-        label("start")
-        mov(x, osr)             # load 16 bits into x
-        label("bit_loop")
-        pull()                  # get next bit
-        jmp(x_not_zero, "send_one")
-        # Send 0: low for 1 cycle
-        set(pins, 0) [1]
-        jmp("done")
-        label("send_one")
-        # Send 1: high for 2 cycles
-        set(pins, 1) [1]
-        set(pins, 1) [1]
-        label("done")
-        in_(x, 1)
-        jmp(x, "bit_loop")
-
-    # Initialize and activate a state machine for each pin
-    sm_list = []
-    for pin_num in pins:
-        sm = rp2.StateMachine(
-            0, dshot, freq=freq, sideset_pin=Pin(pin_num)
-        )
+    sms = []
+    for i, pin_num in enumerate(pins):
+        sm = StateMachine(i, dshot, freq=freq, sideset_base=Pin(pin_num))
         sm.active(1)
-        sm_list.append(sm)
-
-    # Send packets to each ESC
-    for sm, packet in zip(sm_list, packets):
+        sms.append(sm)
+    for sm, packet in zip(sms, packets):
         sm.put(packet)
-
 # Example usage with custom pins:
 # send_dshot_to_escs([1000, 1000, 1000, 1000], pins=[2, 3, 4, 5])
 #Send every 10-20ms
 
 
 
-def coms()
+def coms():
+    global Movement
     while True:
        
         try:
@@ -168,17 +157,27 @@ def coms()
             print(e)
             break
 
-
+#ALSO IS REALIZED THAT THERE IS NO ROLL CONTROL SO UHHH lol
 def motorControl():
     
-    m1T = 0
-    m2T = 0
-    m3T = 0
-    m4T = 0
+    m1T = 0 #CW top right
+    m2T = 0 #CCW top left
+    m3T = 0 #CW bottom left
+    m4T = 0 #CCW bottom right
     
+    
+    
+    m1TSave = 0
+    m2TSave = 0
+    m3TSave = 0
+    m4TSave = 0
+    #Just adding a wait for communication purposes
     time.sleep(5)
     
     while True:
+        
+        lock.acquire()
+        
         if Movement[running] == True:
             if m1T == 0:
                 m1T = m2T = m3T = m4T = 100
@@ -195,20 +194,73 @@ def motorControl():
                 m3T-=40
                 m4T-=40
         
-        #Safety Checks so it doesn't go too high or between 1 to 47
-        if m1T > 1950 or m2T > 1950:
-            m1T, m2T, m3T, m4T = 1950
+            if Movement[fwd] == True:
+                #95% of the original speed for the front motors
+                m1T = 0.95 * m1TSave
+                m2T = 0.95 * m2TSave
+                m3T = 1.05 * m3TSave
+                m4T = 1.05 * m4TSave
+                
+            if Movement[down] == True:
+                m1T = 1.05 * m1TSave
+                m2T = 1.05 * m2TSave
+                m3T = 0.95 * m3TSave
+                m4T = 0.95 * m4TSave
             
-        if m1T < 48 or m2T < 48:
-            m1T, m2T, m3T, m4T = 48
+            #Needs to rotate clockwise so increase CCW motors 2 and 4 since torque is opposite of rotation direction
+            if Movement[right] == True:
+                m1T = 0.95 * m1TSave
+                m2T = 1.05 * m2TSave
+                m3T = 0.95 * m3TSave
+                m4T = 1.05 * m4TSave
+            
+            #Needs to rotate counterclockwise so increase CW motors 1 and 3
+            if Movement[left] == True:
+                m1T = 1.05 * m1TSave
+                m2T = 0.95 * m2TSave
+                m3T = 1.05 * m3TSave
+                m4T = 0.95 * m4TSave
+          
         
-        
-        send_dshot_to_escs([m1T, m2T, m3T, m4T], pins=[m1Pin, m2Pin, m3Pin, m4Pin]
-                           
-        time.sleep(.012)
+            #Safety Checks so it doesn't go too high or between 1 to 47
+            if m1T > 1969 or m2T > 1969:
+                m1T = m2T = m3T = m4T = 1969
+                
+            if m1T < 50 or m2T < 50:
+                m1T = m2T = m3T = m4T = 50
+            
+            #Makes whole number so like it doesn't explode
+            round(m1T)
+            round(m2T)
+            round(m3T)
+            round(m4T)
+            
+
+                
+            #Saves the current motor value so it can go back to them once movement stops
+            #Turns out this is harder than I thought
+            if m1T == m2T == m3T == m4T:
+                m1TSave = m1T
+                m2TSave = m2T
+                m3TSave = m3T
+                m4TSave = m4T
+            
+            #Ensures that when no movement all the motors are the same speed
+            elif Movement[motion] == False:
+                m1T = m1TSave
+                m2T = m2TSave
+                m3T = m3TSave
+                m4T = m4TSave
+            
+            lock.release()
+            
+            send_dshot_to_escs([m1T, m2T, m3T, m4T], pins=[m1Pin, m2Pin, m3Pin, m4Pin], dshot_speed = 150)
+                               
+                          
+            time.sleep(.012)
         
         else:
-            send_dshot_to_escs([0, 0, 0, 0], pins=[m1Pin, m2Pin, m3Pin, m4Pin]
+            send_dshot_to_escs([0, 0, 0, 0], pins=[m1Pin, m2Pin, m3Pin, m4Pin], dshot_speed = 150)
             break
 
 _thread.start_new_thread(coms, ())

@@ -29,6 +29,8 @@ downA = 0
 lower = False
 up = False
 
+motion = False
+
 Movement = {"fwd": fwd, "fwdA": fwdA, "right": right, "rightA": rightA, "left": left, "leftA": leftA, "down": down, "downA": downA, "lower": lower, "up": up}
 
 
@@ -45,10 +47,10 @@ def Accel(Check, accelVar):
 
 
 
-
+#Movement = {"fwd": fwd, "fwdA": fwdA, "right": right, "rightA": rightA, "left": left, "leftA": leftA, "down": down, "downA": downA, "lower": lower, "up": up, "running": running, "motion": motion}
 
 def UI():
-        global running, fwd, right, left, down, lower, up, fwdA, rightA, leftA, downA, Movement
+        global running, fwd, right, left, down, lower, up, fwdA, rightA, leftA, downA, Movement, motion
         #set variables global so u can change
 
 
@@ -74,7 +76,7 @@ def UI():
 
         while running:
                 
-                Movement = {"fwd": fwd, "fwdA": fwdA, "right": right, "rightA": rightA, "left": left, "leftA": leftA, "down": down, "downA": downA, "lower": lower, "up": up, "running": running}
+                Movement = {"fwd": fwd, "right": right, "left": left, "down": down, "lower": lower, "up": up, "running": running, "motion": motion}
 
 
 
@@ -88,7 +90,7 @@ def UI():
 
                 #Moves the background by doing opposite of movement key
                 if fwd == True:
-                        GridRect.centery += 3.7  
+                        GridRect.centery += 3.7 
                 if down == True:
                         GridRect.centery -= 3.7
                 if right == True:
@@ -132,19 +134,21 @@ def UI():
                                 #Fwd movement
                                 if event.key == pygame.K_w:
                                         fwd = True
-
+                                        motion = True
 
                                 #Down movement        
                                 if event.key == pygame.K_s:
                                         down = True
-
+                                        motion = True
                                 #Right movement
                                 if event.key == pygame.K_d:
                                         right = True
+                                        motion = True
 
                                 #Left movement
                                 if event.key == pygame.K_a:
                                         left = True
+                                        motion = True
 
                                 if event.key == pygame.K_SPACE:
                                         up = True
@@ -156,16 +160,19 @@ def UI():
                                 #Detects fwd release
                                 if event.key == pygame.K_w:
                                         fwd = False
-
+                                        motion = False
                                 #Detects down button release thingy idk 
                                 if event.key == pygame.K_s:
                                         down = False
+                                        motion = False
 
                                 if event.key == pygame.K_d:
                                         right = False
+                                        motion = False
 
                                 if event.key == pygame.K_a:
                                         left = False  
+                                        motion = False
 
                                 if event.key == pygame.K_SPACE:
                                         up = False  
