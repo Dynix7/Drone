@@ -178,44 +178,44 @@ def motorControl():
         
         lock.acquire()
         
-        if Movement[running] == True:
+        if Movement["running"] == True:
             if m1T == 0:
                 m1T = m2T = m3T = m4T = 100
                 
-            if Movement[up] == True:
+            if Movement["up"] == True:
                 m1T+=40
                 m2T+=40
                 m3T+=40
                 m4T+=40
                 
-            if Movement[lower] == True:
+            if Movement["lower"] == True:
                 m1T-=40
                 m2T-=40
                 m3T-=40
                 m4T-=40
         
-            if Movement[fwd] == True:
+            if Movement["fwd"] == True:
                 #95% of the original speed for the front motors
                 m1T = 0.95 * m1TSave
                 m2T = 0.95 * m2TSave
                 m3T = 1.05 * m3TSave
                 m4T = 1.05 * m4TSave
                 
-            if Movement[down] == True:
+            if Movement["down"] == True:
                 m1T = 1.05 * m1TSave
                 m2T = 1.05 * m2TSave
                 m3T = 0.95 * m3TSave
                 m4T = 0.95 * m4TSave
             
             #Needs to rotate clockwise so increase CCW motors 2 and 4 since torque is opposite of rotation direction
-            if Movement[right] == True:
+            if Movement["right"] == True:
                 m1T = 0.95 * m1TSave
                 m2T = 1.05 * m2TSave
                 m3T = 0.95 * m3TSave
                 m4T = 1.05 * m4TSave
             
             #Needs to rotate counterclockwise so increase CW motors 1 and 3
-            if Movement[left] == True:
+            if Movement["left"] == True:
                 m1T = 1.05 * m1TSave
                 m2T = 0.95 * m2TSave
                 m3T = 1.05 * m3TSave
@@ -230,10 +230,10 @@ def motorControl():
                 m1T = m2T = m3T = m4T = 50
             
             #Makes whole number so like it doesn't explode
-            round(m1T)
-            round(m2T)
-            round(m3T)
-            round(m4T)
+            m1T = round(m1T)
+            m2T = round(m2T)
+            m3T = round(m3T)
+            m4T = round(m4T)
             
 
                 
@@ -246,7 +246,7 @@ def motorControl():
                 m4TSave = m4T
             
             #Ensures that when no movement all the motors are the same speed
-            elif Movement[motion] == False:
+            elif Movement["motion"] == False:
                 m1T = m1TSave
                 m2T = m2TSave
                 m3T = m3TSave
@@ -264,4 +264,4 @@ def motorControl():
             break
 
 _thread.start_new_thread(coms, ())
-   
+#_threada.start_new_thread(motorControl, ())
