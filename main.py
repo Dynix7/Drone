@@ -20,8 +20,7 @@ Port = 55555
 lock = _thread.allocate_lock()
 
 #Starting at top right and going counterclockwise
-# 0 - 2047
-
+# values from 0 - 2047
 
 m1Pin = 16 #Clockwise
 m2Pin = 17 #Counter Clockwise
